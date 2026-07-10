@@ -84,6 +84,7 @@ python scheduler.py config/schedule.yaml --csv out/schedule.csv
 
 ---
 
+
 ## 출처 및 라이선스
 
 경희대학교 의과대학 졸업준비위원회에서 실제 운영한 배정 시스템의 규칙을 일반화한 것입니다. 라이선스는 [MIT](LICENSE).
