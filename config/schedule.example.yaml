@@ -1,0 +1,98 @@
+# CPX/OSCE 실기 연습 자동배정 설정 (예시값 = 경희대 26년도)
+#
+# 사용법: 이 파일을 복사해 config/schedule.yaml 로 만들고 우리 학교 값으로 수정하세요.
+#
+# ⚠️ 개인정보 금지: 학생 이름/학번/점수를 절대 넣지 마세요.
+#    배정에는 "조 번호"와 "조별 인원수"만 사용합니다.
+
+period:
+  start: 2026-07-06
+  end: 2026-08-05
+  # 종료일 이후 데이터는 마스터에서 숨김/삭제
+
+# 하루 시간 구조 (Class = 시간 블록)
+classes:
+  - { id: 1, start: "08:00", end: "11:30" }
+  - { id: 2, start: "11:30", end: "15:00" }
+  - { id: 3, start: "15:00", end: "18:30" }
+  - { id: 4, start: "18:30", end: "22:00" }
+
+# 요일별 운영 규칙
+operating_classes:
+  weekday: [3, 4]           # 평일에 여는 Class
+  weekend: [2, 3, 4]        # 주말에 여는 Class
+  cpx_excluded_classes: [1] # CPX 배정에서 제외 (OSCE 예외는 osce 섹션 참고)
+
+# 시설 제약
+capacity:
+  rooms_total: 15           # 방 총개수
+  people_per_room: 2        # 방 개수 = floor(인원 / people_per_room)
+  max_people_per_class: 30  # 한 Class 총 인원 상한
+  max_groups_per_class: 6   # 한 Class에 넣을 조 개수 상한 (그리디 채움 한도)
+
+# 조 구성 (개인정보 없이 인원수만)
+groups:
+  - { ids: [1, 2, 3, 4], size: 6 }
+  - { ids: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], size: 5 }
+  # 위 예시 = 총 16개 조 / 84명
+
+# CPX 전면 제외일 (사유는 문서화용)
+cpx_blackout_dates:
+  - { date: 2026-07-07, reason: "CPX 시험 전일 · 시설 사용 불가" }
+  - { date: 2026-07-08, reason: "CPX 시험 당일" }
+  - { date: 2026-07-11, reason: "OSCE 연습" }
+  - { date: 2026-07-12, reason: "OSCE 연습" }
+  - { date: 2026-07-20, reason: "OSCE 시험" }
+  - { date: 2026-07-21, reason: "OSCE 시험" }
+  - { date: 2026-07-29, reason: "임종평가 전일" }
+  - { date: 2026-07-30, reason: "임종평가 당일" }
+
+# OSCE 설정
+osce:
+  practice_window:
+    start: 2026-07-13
+    end: 2026-07-18
+  one_group_per_class: true              # 한 Class에 한 조만
+  class1_allowed_dates:                  # 연습 중 Class 1을 여는 예외일
+    - 2026-07-17
+    - 2026-07-18
+  placement:                             # 연습 기간 조별·Class별 고정 배치
+    2026-07-13: { 3: 1,  4: 2 }
+    2026-07-14: { 3: 3,  4: 4 }
+    2026-07-15: { 3: 5,  4: 6 }
+    2026-07-16: { 3: 7,  4: 8 }
+    2026-07-17: { 1: 9,  2: 10, 3: 11, 4: 12 }
+    2026-07-18: { 1: 13, 2: 14, 3: 15, 4: 16 }
+  # OSCE 연습이 배정된 조는 그날 CPX 배정 제외 (하루 1 Class 원칙)
+
+# 임상수기센터 배타성
+clinical_skills_center:
+  exclusive_per_class: true  # 같은 Class에 OSCE 조와 하이브리드 조 공존 불가
+
+# CPX 하드 제약
+cpx_rules:
+  max_classes_per_group_per_day: 1     # 한 조 = 하루 최대 1 Class
+  no_duplicate_group_in_same_class: true
+
+# 균등 배정 목표 (Soft)
+balance_goals:
+  target_practice_count: 12            # 조별 목표 연습 횟수 (미지정 시 자동 추정)
+  equalize_total_practice_count: true  # 모든 조 총 연습 횟수 균등
+  spread_across_timeslots: true        # Class 2·3·4 고르게 경험
+  spread_across_period: true           # 기간 전체 고르게 (앞쪽 몰림 방지)
+  # 참고: 원본(경희대) 결과 = 전 조 12회 동일, 편차 0
+
+# 검산(자동 검증) 항목
+verification_checks:
+  - "조별 CPX 연습 횟수 편차 = 0"
+  - "Class 인원 <= max_people_per_class"
+  - "방 개수 <= rooms_total"
+  - "OSCE Class당 조 수 <= 1"
+  - "제외일 CPX 인원 합 = 0"
+
+# 형광펜(조건부서식) 색상 — 참고용 (hex)
+colors:
+  cpx: "FFFF00"            # 노랑
+  osce: "CFE2F3"           # 하늘
+  hybrid: "B7E1CD"         # 초록
+  cpx_intensive: "F9CB9C"  # 주황
